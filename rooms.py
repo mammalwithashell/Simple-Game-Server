@@ -125,10 +125,7 @@ class Room:
         self.capacity = capacity
         self.players = []
         self.identifier = identifier
-        if room_name is not None:
-            self.name = room_name
-        else:
-            self.name = self.identifier
+        self.name = room_name if room_name is not None else self.identifier
 
     def join(self, player):
         """
@@ -152,30 +149,19 @@ class Room:
         """
         Check if room is empty or not
         """
-        if len(self.players) == 0:
-            return True
-        else:
-            return False
+        return len(self.players) == 0
 
     def is_full(self):
         """
         Check if room is full or not
         """
-        if len(self.players) == self.capacity:
-            return True
-        else:
-            return False
+        return len(self.players) == self.capacity
 
     def is_in_room(self, player_identifier):
         """
         Check if player is in room
         """
-        in_room = False
-        for player in self.players:
-            if player.identifier == player_identifier:
-                in_room = True
-                break
-        return in_room
+        return any(player.identifier == player_identifier for player in self.players)
 
 
 class RoomFull(Exception):
