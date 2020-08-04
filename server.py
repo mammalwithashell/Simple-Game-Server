@@ -257,7 +257,22 @@ class TcpServer(Thread):
             # Get client object
             client = self.rooms.players[identifier]
 
-            if action == "join":
+            if action == "autojoin":
+                room_id = self.rooms.join(identifier)
+                client.send_tcp(True, room_id, sock)
+            elif action == "create":
+                room_identifier = self.rooms.create(payload)
+                self.rooms.join(client.identifier, room_identifier)
+                client.send_tcp(True, room_identifier, sock)
+            elif action == "get_rooms":
+                rooms = []
+                for id_room, room in self.rooms.rooms.items():
+                    rooms.append({"id": id_room,
+                                  "name": room.name,
+                                  "nb_players": len(room.players),
+                                  "capacity": room.capacity})
+                client.send_tcp(True, rooms, sock)
+            elif action == "join":
                 try:
                     if payload not in self.rooms.rooms.keys():
                         raise RoomNotFound()
@@ -267,21 +282,6 @@ class TcpServer(Thread):
                     client.send_tcp(False, room_id, sock)
                 except RoomFull:
                     client.send_tcp(False, room_id, sock)
-            elif action == "autojoin":
-                room_id = self.rooms.join(identifier)
-                client.send_tcp(True, room_id, sock)
-            elif action == "get_rooms":
-                rooms = []
-                for id_room, room in self.rooms.rooms.items():
-                    rooms.append({"id": id_room,
-                                  "name": room.name,
-                                  "nb_players": len(room.players),
-                                  "capacity": room.capacity})
-                client.send_tcp(True, rooms, sock)
-            elif action == "create":
-                room_identifier = self.rooms.create(payload)
-                self.rooms.join(client.identifier, room_identifier)
-                client.send_tcp(True, room_identifier, sock)
             elif action == 'leave':
                 try:
                     if room_id not in self.rooms.rooms:
